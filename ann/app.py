@@ -1,80 +1,103 @@
 import streamlit as st
-import numpy as np
 import tensorflow as tf
 import joblib
+import numpy as np
 
 st.set_page_config(
     page_title="Air Passenger Forecast",
-    page_icon="✈️"
+    page_icon="✈️",
+    layout="centered"
 )
 
-# Load files
-model = tf.keras.models.load_model(
-    "models/model.keras",
-    compile=False
-)
+st.title("✈️ Air Passenger Forecasting")
 
-scaler = joblib.load(
-    "models/scaler.pkl"
-)
+# ==========================
+# LOAD MODEL
+# ==========================
 
-st.title(
-    "✈️ Air Passenger Forecasting"
-)
+try:
+    model = tf.keras.models.load_model(
+        "models/model.keras",
+        compile=False
+    )
 
-st.write(
-    "Enter previous 5 months passenger values"
+    scaler = joblib.load(
+        "models/scaler.pkl"
+    )
+
+    st.success("Model Loaded Successfully")
+
+except Exception as e:
+
+    st.error("Model Loading Error")
+
+    st.code(str(e))
+
+    st.stop()
+
+# ==========================
+# INPUTS
+# ==========================
+
+st.subheader(
+    "Enter Previous 5 Months Passenger Counts"
 )
 
 p1 = st.number_input(
     "Month 1",
-    value=100
+    value=112
 )
 
 p2 = st.number_input(
     "Month 2",
-    value=110
+    value=118
 )
 
 p3 = st.number_input(
     "Month 3",
-    value=120
+    value=132
 )
 
 p4 = st.number_input(
     "Month 4",
-    value=130
+    value=129
 )
 
 p5 = st.number_input(
     "Month 5",
-    value=140
+    value=121
 )
 
-if st.button(
-    "Predict"
-):
+# ==========================
+# PREDICT
+# ==========================
 
-    values = np.array(
-        [[p1], [p2], [p3], [p4], [p5]]
-    )
+if st.button("Predict"):
 
-    values_scaled = scaler.transform(
+    values = np.array([
+        [p1],
+        [p2],
+        [p3],
+        [p4],
+        [p5]
+    ])
+
+    scaled = scaler.transform(
         values
     )
 
-    X = values_scaled.reshape(
+    X = scaled.reshape(
         1,
         5
     )
 
-    pred = model.predict(
+    prediction = model.predict(
         X,
         verbose=0
     )
 
     forecast = scaler.inverse_transform(
-        pred.reshape(-1, 1)
+        prediction.reshape(-1, 1)
     )
 
     st.success(
