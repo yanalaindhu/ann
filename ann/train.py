@@ -7,47 +7,60 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
-# Load dataset
-df = pd.read_csv("data/AirPassengers.csv")
+df = pd.read_csv(
+    "data/AirPassengers.csv"
+)
 
-# Use passenger column
-data = df["#Passengers"].values.reshape(-1, 1)
+data = df["#Passengers"].values.reshape(
+    -1,
+    1
+)
 
-# Scaling
 scaler = MinMaxScaler()
 
-data_scaled = scaler.fit_transform(data)
+data_scaled = scaler.fit_transform(
+    data
+)
 
 joblib.dump(
     scaler,
     "models/scaler.pkl"
 )
 
-# Create sequences
+window = 5
+
 X = []
 y = []
 
-window_size = 5
+for i in range(
+    window,
+    len(data_scaled)
+):
 
-for i in range(window_size, len(data_scaled)):
     X.append(
-        data_scaled[i-window_size:i, 0]
+        data_scaled[
+            i-window:i,
+            0
+        ]
     )
+
     y.append(
-        data_scaled[i, 0]
+        data_scaled[
+            i,
+            0
+        ]
     )
 
 X = np.array(X)
 y = np.array(y)
 
-# ANN Model
 model = Sequential()
 
 model.add(
     Dense(
         64,
         activation="relu",
-        input_shape=(window_size,)
+        input_shape=(5,)
     )
 )
 
@@ -59,9 +72,7 @@ model.add(
 )
 
 model.add(
-    Dense(
-        1
-    )
+    Dense(1)
 )
 
 model.compile(
@@ -72,9 +83,8 @@ model.compile(
 model.fit(
     X,
     y,
-    epochs=100,
-    batch_size=8,
-    verbose=1
+    epochs=50,
+    batch_size=8
 )
 
 model.save(
